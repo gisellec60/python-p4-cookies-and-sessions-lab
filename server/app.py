@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import ipdb
 from flask import Flask, make_response, jsonify, session
 from flask_migrate import Migrate
 
@@ -25,19 +25,19 @@ def index_articles():
     pass
 @app.route('/articles/<int:id>')
 def show_article(id):
-
+    # ipdb.set_trace()
     article = Article.query.filter_by(id=id).first().to_dict()
-
-    session['page_views'] = 0 or session['page_views'] + 1 
-    print ("what number are we at", session['page_views']) 
-    
-    if session['page_views'] > 20:
-       response = make_response(jsonify({
-           "message" : 'Maximum pageview limit reached'
-       }), 404) 
+    if session.get('page_views'):
+        session["page_views"] += 1
     else:
-         print("article: ", article)
-         response = make_response(article,200)
+        session["page_views"] = 1
+    
+    if session.get('page_views') > 3:
+        response = make_response(jsonify({
+           "message" : 'Maximum pageview limit reached'
+        }), 401) 
+    else:
+        response = make_response(article,200)
     
     return response 
 
